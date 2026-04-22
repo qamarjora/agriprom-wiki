@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agriprom — База знаний</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Arial,sans-serif;font-size:14px;color:#1a1a1a;background:#f5f5f5;display:flex;flex-direction:column;min-height:100vh}
+
+  /* HEADER */
+  .header{background:#1A6B3A;padding:0 24px;height:52px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+  .header-logo{font-size:15px;font-weight:700;color:#fff;letter-spacing:0.06em;white-space:nowrap}
+  .header-sub{font-size:11px;color:#AADFC0;white-space:nowrap}
+  .header-nav{display:flex;gap:2px;margin-left:auto}
+  .header-nav a{font-size:12px;color:#AADFC0;padding:6px 12px;border-radius:4px;text-decoration:none;transition:background .15s}
+  .header-nav a:hover,.header-nav a.active{background:rgba(255,255,255,0.15);color:#fff}
+
+  /* LAYOUT */
+  .layout{display:flex;flex:1}
+
+  /* SIDEBAR */
+  .sidebar{width:220px;min-width:220px;background:#fff;border-right:1px solid #e8e8e8;padding:16px 0;position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto}
+  .sidebar-section{margin-bottom:8px}
+  .sidebar-label{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.08em;padding:8px 16px 4px}
+  .sidebar-link{display:flex;align-items:center;gap:8px;padding:7px 16px;font-size:13px;color:#555;text-decoration:none;border-left:3px solid transparent;transition:all .15s;cursor:pointer}
+  .sidebar-link:hover{background:#f5f5f5;color:#1A6B3A}
+  .sidebar-link.active{border-left-color:#1A6B3A;color:#1A6B3A;background:#EAF3DE;font-weight:700}
+  .sidebar-icon{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+
+  /* CONTENT */
+  .content{flex:1;padding:28px 36px;max-width:860px}
+  .page{display:none}
+  .page.active{display:block}
+  .page-header{margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #e8e8e8}
+  .page-title{font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+  .page-desc{font-size:13px;color:#777}
+
+  /* SECTIONS */
+  .section{margin-bottom:20px}
+  .section-title{font-size:13px;font-weight:700;color:#1A6B3A;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .edit-badge{font-size:10px;background:#FFF8E1;color:#D97706;border:1px solid #FDE68A;padding:2px 8px;border-radius:10px;font-weight:600;text-transform:none;letter-spacing:0}
+
+  /* CARDS */
+  .card{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:16px;margin-bottom:12px}
+  .card-title{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:8px}
+  .fact-list{list-style:none}
+  .fact-list li{padding:6px 0;border-bottom:1px solid #f0f0f0;font-size:13px;color:#333;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
+  .fact-list li:last-child{border-bottom:none}
+  .fact-list li::before{content:"";width:7px;height:7px;border-radius:50%;background:#1A6B3A;flex-shrink:0;margin-top:5px}
+  .placeholder{color:#bbb;font-style:italic}
+
+  /* SCRIPT BOX */
+  .script-box{background:#F0F7F0;border-left:4px solid #1A6B3A;border-radius:0 8px 8px 0;padding:12px 16px;font-size:13px;line-height:1.7;color:#1a1a1a;margin-bottom:10px;font-style:italic}
+  .script-step{font-size:11px;font-weight:700;color:#1A6B3A;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px}
+
+  /* OBJECTION */
+  .objection{border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;margin-bottom:10px}
+  .obj-q{background:#FDE8E8;color:#C0392B;padding:9px 14px;font-size:13px;font-weight:700}
+  .obj-a{background:#fff;padding:9px 14px;font-size:13px;color:#333;line-height:1.6}
+  .obj-placeholder{color:#bbb;font-style:italic}
+
+  /* PRODUCT GRID */
+  .product-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px}
+  .product-card{background:#fff;border:1px solid #e8e8e8;border-radius:8px;padding:14px;transition:box-shadow .15s}
+  .product-card:hover{box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+  .product-icon{width:36px;height:36px;border-radius:8px;background:#EAF3DE;display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:8px}
+  .product-name{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+  .product-desc{font-size:12px;color:#666;line-height:1.5}
+
+  /* TIP BOX */
+  .tip{background:#E8F5E9;border:1px solid #A5D6A7;border-radius:8px;padding:10px 14px;font-size:12px;color:#2E7D32;margin-top:8px;line-height:1.5}
+  .warn{background:#FFF8E1;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;font-size:12px;color:#D97706;margin-top:8px;line-height:1.5}
+
+  /* TABLE */
+  .info-table{width:100%;border-collapse:collapse;font-size:13px}
+  .info-table th{background:#f5f5f5;padding:8px 12px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#777;border-bottom:1px solid #e8e8e8}
+  .info-table td{padding:9px 12px;border-bottom:1px solid #f0f0f0;color:#333}
+  .info-table tr:last-child td{border-bottom:none}
+
+  /* LINKS */
+  .link-card{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#fff;border:1px solid #e8e8e8;border-radius:8px;text-decoration:none;color:#1a1a1a;margin-bottom:8px;transition:background .15s}
+  .link-card:hover{background:#f5f5f5}
+  .link-icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+  .link-text{flex:1}
+  .link-title{font-size:13px;font-weight:700}
+  .link-sub{font-size:11px;color:#888}
+  .link-arrow{color:#ccc;font-size:16px}
+
+  /* FOOTER */
+  .footer{background:#fff;border-top:1px solid #e8e8e8;padding:12px 36px;font-size:11px;color:#aaa;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">AGRIPROM</div>
+  <div class="header-sub">База знаний менеджеров</div>
+  <nav class="header-nav">
+    <a href="#" class="active" onclick="showSection('home',this)">Главная</a>
+    <a href="#" onclick="showSection('product',this)">Продукт</a>
+    <a href="#" onclick="showSection('sales',this)">Продажи</a>
+    <a href="#" onclick="showSection('training',this)">Обучение</a>
+  </nav>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">О компании</div>
+      <a class="sidebar-link active" onclick="showPage('company-facts',this)">
+        <div class="sidebar-icon" style="background:#EAF3DE;color:#1A6B3A">А</div>
+        История и факты
+      </a>
+      <a class="sidebar-link" onclick="showPage('company-markets',this)">
+        <div class="sidebar-icon" style="background:#EAF3DE;color:#1A6B3A">Ф</div>
+        Филиалы и рынки
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Продукт</div>
+      <a class="sidebar-link" onclick="showPage('product-line',this)">
+        <div class="sidebar-icon" style="background:#E6F1FB;color:#0C447C">П</div>
+        Линейка продуктов
+      </a>
+      <a class="sidebar-link" onclick="showPage('product-specs',this)">
+        <div class="sidebar-icon" style="background:#E6F1FB;color:#0C447C">Х</div>
+        Характеристики
+      </a>
+      <a class="sidebar-link" onclick="showPage('product-prices',this)">
+        <div class="sidebar-icon" style="background:#E6F1FB;color:#0C447C">Ц</div>
+        Цены и условия
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Продажи</div>
+      <a class="sidebar-link" onclick="showPage('sales-script',this)">
+        <div class="sidebar-icon" style="background:#FAEEDA;color:#854F0B">С</div>
+        Скрипт звонка
+      </a>
+      <a class="sidebar-link" onclick="showPage('sales-objections',this)">
+        <div class="sidebar-icon" style="background:#FAEEDA;color:#854F0B">В</div>
+        Возражения
+      </a>
+      <a class="sidebar-link" onclick="showPage('sales-cases',this)">
+        <div class="sidebar-icon" style="background:#FAEEDA;color:#854F0B">К</div>
+        Кейсы клиентов
+      </a>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-label">Обучение</div>
+      <a class="sidebar-link" onclick="showPage('training-test',this)">
+        <div class="sidebar-icon" style="background:#F1EFE8;color:#444441">А</div>
+        Аттестация
+      </a>
+      <a class="sidebar-link" onclick="showPage('training-calls',this)">
+        <div class="sidebar-icon" style="background:#F1EFE8;color:#444441">З</div>
+        Записи звонков
+      </a>
+    </div>
+
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="content">
+
+    <!-- COMPANY FACTS -->
+    <div id="company-facts" class="page active">
+      <div class="page-header">
+        <div class="page-title">История и факты о компании</div>
+        <div class="page-desc">Что менеджер должен знать наизусть перед первым звонком</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Ключевые факты</div>
+        <div class="card">
+          <ul class="fact-list">
+            <li>Основана в Нидерландах — более 35 лет на рынке</li>
+            <li>49 филиалов по всему миру</li>
+            <li>Офис в Казахстане — обслуживаем весь рынок РК</li>
+            <li class="placeholder">[ Шеф добавляет: другие важные факты о компании ]</li>
+            <li class="placeholder">[ Шеф добавляет: ключевые достижения, награды, сертификаты ]</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Наша миссия и позиционирование <span class="edit-badge">Шеф заполняет</span></div>
+        <div class="card">
+          <ul class="fact-list">
+            <li class="placeholder">[ Шеф вписывает: в чём ценность Agriprom для фермера ]</li>
+            <li class="placeholder">[ Шеф вписывает: чем отличаемся от конкурентов ]</li>
+            <li class="placeholder">[ Шеф вписывает: наш целевой клиент — кто он ]</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="tip">Совет: менеджер должен уметь рассказать о компании за 30 секунд — коротко и уверенно, без запинок.</div>
+    </div>
+
+    <!-- COMPANY MARKETS -->
+    <div id="company-markets" class="page">
+      <div class="page-header">
+        <div class="page-title">Филиалы и рынки</div>
+        <div class="page-desc">География присутствия Agriprom в мире и в Казахстане</div>
+      </div>
+      <div class="section">
+        <div class="section-title">Страны присутствия <span class="edit-badge">Шеф заполняет</span></div>
+        <div class="card">
+          <ul class="fact-list">
+            <li class="placeholder">[ Шеф вписывает: список стран или регионов ]</li>
+            <li class="placeholder">[ Шеф вписывает: крупнейшие рынки ]</li>
+            <li class="placeholder">[ Шеф вписывает: позиция в Казахстане — города, регионы ]</li>
+          </ul>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Казахстан <span class="edit-badge">Шеф заполняет</span></div>
+        <div class="card">
+          <ul class="fact-list">
+            <li class="placeholder">[ Шеф вписывает: в каких регионах РК работаем ]</li>
+            <li class="placeholder">[ Шеф вписывает: сколько клиентов в Казахстане ]</li>
+            <li class="placeholder">[ Шеф вписывает: крупнейшие фермы-клиенты (если можно называть) ]</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCT LINE -->
+    <div id="product-line" class="page">
+      <div class="page-header">
+        <div class="page-title">Линейка продуктов</div>
+        <div class="page-desc">Что мы продаём и для кого</div>
+      </div>
+      <div class="section">
+        <div class="section-title">Категории оборудования <span class="edit-badge">Шеф заполняет</span></div>
+        <div class="product-grid">
+          <div class="product-card">
+            <div class="product-icon">🐄</div>
+            <div class="product-name">Доильное оборудование</div>
+            <div class="product-desc placeholder">[ Шеф вписывает: краткое описание, для каких ферм ]</div>
+          </div>
+          <div class="product-card">
+            <div class="product-icon">❄️</div>
+            <div class="product-name">Системы охлаждения</div>
+            <div class="product-desc placeholder">[ Шеф вписывает: описание и назначение ]</div>
+          </div>
+          <div class="product-card">
+            <div class="product-icon">🔧</div>
+            <div class="product-name">Сервис и запчасти</div>
+            <div class="product-desc placeholder">[ Шеф вписывает: условия сервиса, гарантия ]</div>
+          </div>
+          <div class="product-card">
+            <div class="product-icon">📦</div>
+            <div class="product-name">[ Категория 4 ]</div>
+            <div class="product-desc placeholder">[ Шеф добавляет нужные категории ]</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCT SPECS -->
+    <div id="product-specs" class="page">
+      <div class="page-header">
+        <div class="page-title">Характеристики оборудования</div>
+        <div class="page-desc">Технические детали которые нужно знать менеджеру</div>
+      </div>
+      <div class="section">
+        <div class="section-title">Доильные установки <span class="edit-badge">Шеф заполняет</span></div>
+        <div class="card">
+          <table class="info-table">
+            <tr><th>Параметр</th><th>Значение</th><th>Для какой фермы</th></tr>
+            <tr><td class="placeholder">[ Модель 1 ]</td><td class="placeholder">[ Характеристики ]</td><td class="placeholder">[ До X голов ]</td></tr>
+            <tr><td class="placeholder">[ Модель 2 ]</td><td class="placeholder">[ Характеристики ]</td><td class="placeholder">[ До X голов ]</td></tr>
+            <tr><td class="placeholder">[ Модель 3 ]</td><td class="placeholder">[ Характеристики ]</td><td class="placeholder">[ До X голов ]</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="warn">Это раздел для шефа — он вписывает только то что нужно знать менеджеру для разговора с клиентом. Не нужны все технические детали, только ключевые.</div>
+    </div>
+
+    <!-- PRODUCT PRICES -->
+    <div id="product-prices" class="page">
+      <div class="page-header">
+        <div class="page-title">Цены и условия</div>
+        <div class="page-desc">Ценовые диапазоны и условия работы с клиентами</div>
+      </div>
+      <div class="section">
+        <div class="section-title">Ценовые диапазоны <span class="edit-badge">Шеф заполняет</span></div>
+        <div class="card">
+          <ul class="fact-list">
+            <li class="placeholder">[ Шеф вписывает: ценовой диапазон по категориям ]</li>
+            <li class="placeholder">[ Шеф вписывает: условия рассрочки или лизинга если есть ]</li>
+            <li class="placeholder">[ Шеф вписывает: что входит в стоимость — монтаж, доставка ]</li>
+          </ul>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Что говорить о цене по телефону <span class="edit-badge">Шеф заполняет</span></div>
+        <div class="card">
+          <ul class="fact-list">
+            <li class="placeholder">[ Шеф вписывает: можно ли называть цену по телефону или только на встрече ]</li>
+            <li class="placeholder">[ Шеф вписывает: как отвечать на вопрос "сколько стоит?" ]</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SALES SCRIPT -->
+    <div id="sales-script" class="page">
+      <div class="page-header">
+        <div class="page-title">Скрипт холодного звонка</div>
+        <div class="page-desc">Цель звонка — назначить выезд инженера на ферму</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Шаг 1 — Открытие</div>
+        <div class="script-step">Первые 15 секунд</div>
+        <div class="script-box">«Добрый день! Меня зовут [Имя], компания Agriprom — мы поставляем оборудование для молочных ферм, работаем в Казахстане уже много лет. Вы занимаетесь молочным производством?»</div>
+        <div class="tip">Цель — убедиться что говорите с нужным человеком. Не продавать, просто подтвердить.</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Шаг 2 — Зацепка</div>
+        <div class="script-box">«Мы сейчас работаем с несколькими фермами в вашем регионе и помогаем им повысить надои за счёт современного доильного оборудования. Хотел узнать — какое оборудование вы сейчас используете и есть ли задачи которые хотелось бы решить?»</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Шаг 3 — Вопросы (задать 2–3)</div>
+        <div class="script-box">«Сколько голов у вас сейчас?»<br><br>«Какое оборудование стоит — доильные аппараты, охладители?»<br><br>«Планируете расширение в ближайшее время?»</div>
+        <div class="tip">Слушайте внимательно и записывайте — это ваш козырь на встрече.</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Шаг 4 — Назначение встречи</div>
+        <div class="script-box">«Понял вас. Чтобы конкретно сказать чем мы можем помочь — нужно увидеть ферму вживую, займёт не больше часа. Наш инженер приедет, посмотрит и скажет что можно улучшить. Это бесплатно. Когда удобно — на этой неделе или следующей?»</div>
+        <div class="tip">Всегда предлагайте два варианта даты. Не спрашивайте "когда удобно" — слишком открытый вопрос.</div>
+      </div>
+    </div>
+
+    <!-- SALES OBJECTIONS -->
+    <div id="sales-objections" class="page">
+      <div class="page-header">
+        <div class="page-title">Работа с возражениями</div>
+        <div class="page-desc">Правило: согласиться → объяснить → предложить маленький следующий шаг</div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Типичные возражения</div>
+
+        <div class="objection">
+          <div class="obj-q">«Уже работаем с другим поставщиком»</div>
+          <div class="obj-a">«Хорошо, понимаю. А как давно с ними работаете? Многие наши клиенты тоже сначала работали с другими — просто когда увидели разницу в качестве, решили попробовать. Мы не просим сразу менять поставщика — просто давайте встретимся, посмотрим ферму, и если сможем дать лучше — скажем честно. Вам это ничего не стоит.»</div>
+        </div>
+
+        <div class="objection">
+          <div class="obj-q">«Сейчас нет бюджета»</div>
+          <div class="obj-a">«Понимаю. А когда планируете бюджет на следующий год — осенью? Тогда запишу вас и свяжусь в нужное время. А пока — можно отправлю каталог на WhatsApp, чтобы были в курсе?»</div>
+        </div>
+
+        <div class="objection">
+          <div class="obj-q">«Нет времени / занят»</div>
+          <div class="obj-a">«Понимаю, не буду долго. Один вопрос: есть ли у вас сейчас сложности с доением или качеством молока? Если да — стоит поговорить, если нет — не буду отвлекать.»</div>
+        </div>
+
+        <div class="objection">
+          <div class="obj-q">«Дорого»</div>
+          <div class="obj-a">«Понимаю. Именно поэтому сначала хочу приехать и посмотреть — мы работаем с разными бюджетами и всегда находим решение. Бывает что небольшое обновление даёт большой результат. Давайте сначала встретимся?»</div>
+        </div>
+
+        <div class="section" style="margin-top:16px">
+          <div class="section-title">Добавить возражение <span class="edit-badge">Шеф заполняет</span></div>
+          <div class="objection">
+            <div class="obj-q obj-placeholder">[ Шеф добавляет: другие частые возражения клиентов ]</div>
+            <div class="obj-a obj-placeholder">[ Шеф вписывает: правильный ответ ]</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SALES CASES -->
+    <div id="sales-cases" class="page">
+      <div class="page-header">
+        <div class="page-title">Кейсы клиентов</div>
+        <div class="page-desc">Реальные примеры результатов — используйте в разговоре с клиентом</div>
+      </div>
+      <div class="section">
+        <div class="section-title">Кейс 1 <span class="edit-badge">Шеф заполняет</span></div>
+        <div class="card">
+          <div class="card-title placeholder">[ Название фермы или региона ]</div>
+          <ul class="fact-list">
+            <li class="placeholder">[ Ситуация до: какая была проблема ]</li>
+            <li class="placeholder">[ Что сделали: какое оборудование поставили ]</li>
+            <li class="placeholder">[ Результат: конкретные цифры — надои, экономия, окупаемость ]</li>
+          </ul>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Кейс 2 <span class="edit-badge">Шеф заполняет</span></div>
+        <div class="card">
+          <div class="card-title placeholder">[ Название фермы или региона ]</div>
+          <ul class="fact-list">
+            <li class="placeholder">[ Ситуация до ]</li>
+            <li class="placeholder">[ Решение ]</li>
+            <li class="placeholder">[ Результат в цифрах ]</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tip">Кейсы — это самый сильный аргумент в разговоре. Клиент слышит не "мы хорошие", а "вот ферма похожая на вашу, вот что получили".</div>
+    </div>
+
+    <!-- TRAINING TEST -->
+    <div id="training-test" class="page">
+      <div class="page-header">
+        <div class="page-title">Аттестация менеджеров</div>
+        <div class="page-desc">Ссылки на тест и материалы для подготовки</div>
+      </div>
+      <div class="section">
+        <div class="section-title">Ссылки</div>
+        <a class="link-card" href="#" onclick="return false">
+          <div class="link-icon" style="background:#EAF3DE">📋</div>
+          <div class="link-text">
+            <div class="link-title">Аттестация — тест (Google Forms)</div>
+            <div class="link-sub placeholder">[ Шеф вставляет ссылку на Google Forms ]</div>
+          </div>
+          <div class="link-arrow">→</div>
+        </a>
+        <a class="link-card" href="#" onclick="return false">
+          <div class="link-icon" style="background:#E6F1FB">📊</div>
+          <div class="link-text">
+            <div class="link-title">Презентация аттестации (PPTX)</div>
+            <div class="link-sub placeholder">[ Шеф вставляет ссылку на Google Drive ]</div>
+          </div>
+          <div class="link-arrow">→</div>
+        </a>
+      </div>
+      <div class="section">
+        <div class="section-title">Шкала оценок</div>
+        <div class="card">
+          <table class="info-table">
+            <tr><th>Баллы</th><th>Результат</th><th>Действие</th></tr>
+            <tr><td style="color:#1A6B3A;font-weight:700">18–20</td><td>Готов к звонкам</td><td>Допускается к работе</td></tr>
+            <tr><td style="color:#D97706;font-weight:700">12–17</td><td>Требуется доработка</td><td>Повторить слабые разделы</td></tr>
+            <tr><td style="color:#C0392B;font-weight:700">0–11</td><td>Нужно обучение</td><td>Повторная аттестация через неделю</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRAINING CALLS -->
+    <div id="training-calls" class="page">
+      <div class="page-header">
+        <div class="page-title">Записи звонков</div>
+        <div class="page-desc">Примеры хороших и плохих звонков для обучения</div>
+      </div>
+      <div class="section">
+        <div class="section-title">Хорошие примеры <span class="edit-badge">Шеф добавляет</span></div>
+        <a class="link-card" href="#" onclick="return false">
+          <div class="link-icon" style="background:#EAF3DE">🎧</div>
+          <div class="link-text">
+            <div class="link-title placeholder">[ Запись 1 — название / дата ]</div>
+            <div class="link-sub placeholder">[ Шеф вставляет ссылку на запись из Zadarma ]</div>
+          </div>
+          <div class="link-arrow">→</div>
+        </a>
+        <a class="link-card" href="#" onclick="return false">
+          <div class="link-icon" style="background:#EAF3DE">🎧</div>
+          <div class="link-text">
+            <div class="link-title placeholder">[ Запись 2 — название / дата ]</div>
+            <div class="link-sub placeholder">[ Шеф вставляет ссылку ]</div>
+          </div>
+          <div class="link-arrow">→</div>
+        </a>
+      </div>
+      <div class="section">
+        <div class="section-title">Что разбирать при прослушивании</div>
+        <div class="card">
+          <ul class="fact-list">
+            <li>Назвал ли менеджер имя и компанию в первые 5 секунд</li>
+            <li>Задал ли минимум 2 вопроса о ферме</li>
+            <li>Уверенно ли предложил встречу</li>
+            <li>Как отработал возражение — не спорил, предложил следующий шаг</li>
+            <li>Договорился ли о конкретном следующем шаге</li>
+          </ul>
+        </div>
+      </div>
+      <div class="tip">Разбирайте записи вместе с менеджером — не говорите "ты сделал плохо", а слушайте вдвоём и обсуждайте конкретный момент.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">
+  Agriprom · База знаний менеджеров · Версия 1.0 · Структура подготовлена — шеф заполняет экспертизу
+</div>
+
+<script>
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(el) el.classList.add('active');
+}
+function showSection(section, el) {
+  document.querySelectorAll('.header-nav a').forEach(a => a.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const map = {
+    home: ['company-facts', document.querySelector('[onclick*="company-facts"]')],
+    product: ['product-line', document.querySelector('[onclick*="product-line"]')],
+    sales: ['sales-script', document.querySelector('[onclick*="sales-script"]')],
+    training: ['training-test', document.querySelector('[onclick*="training-test"]')],
+  };
+  if(map[section]) showPage(map[section][0], map[section][1]);
+}
+</script>
+
+</body>
+</html>
